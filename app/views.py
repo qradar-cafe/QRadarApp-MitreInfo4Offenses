@@ -56,7 +56,7 @@ def custom_html_generator(offense_json):
     ariel = ArielSearch()
     # Run am Ariel synch search 
     timeout = 15
-    sleep_interval = 20
+    sleep_interval = 2
     try:
         response = ariel.search_sync(query_string, timeout, sleep_interval)
         qpylib.log('SearchID: ' + str(response[0]), level='DEBUG')
