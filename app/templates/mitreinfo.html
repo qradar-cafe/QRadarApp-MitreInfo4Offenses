@@ -1,0 +1,30 @@
+<table border="1">
+  <tr>
+    <th><strong>Rules</strong></th>
+    <th><strong>Tactics</strong></th>
+  </tr>
+  {% for rule in rules %}
+  <tr>
+    <td>
+      {{ rule.name }}
+    </td>
+    <td>
+      <table border="1">
+      {% for tactic in rule.tactics %}
+        <tr>
+          <td>Name</td>
+          <td>Confidence</td>
+          <td>ID</td>
+        </tr>
+        <tr>
+          <td>{{ tactic.name }}</td>
+          <td>{{ tactic.confidence }}</td>
+          <td>{{ tactic.id }}</td>
+        </tr>  
+      {% endfor %}
+      </table>
+    </td>  
+  </tr>      
+  {% endfor %}
+  </tbody>
+</table>

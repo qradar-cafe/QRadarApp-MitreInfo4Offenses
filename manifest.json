@@ -1,0 +1,1 @@
+{"name": "MitreOffense", "description": "Mitre info panel for offenses", "version": "1.0", "image": "qradar-app-base:2.0.4", "fragments": [{"app_name": "SEM", "page_id": "OffenseSummary", "rest_endpoint": "mitreinfo"}], "uuid": "60ff6ae0-f7f6-4d14-9d20-df3873c6c995"}
