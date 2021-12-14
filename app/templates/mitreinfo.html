@@ -10,12 +10,12 @@
     </td>
     <td>
       <table>
-      {% for tactic in rule.tactics %}
         <tr>
           <td>Name</td>
           <td>Confidence</td>
           <td>ID</td>
         </tr>
+        {% for tactic in rule.tactics %}
         <tr>
           <td>{{ tactic.name }}</td>
           <td>{{ tactic.confidence }}</td>
