@@ -1,0 +1,1 @@
+# QRadarApp-MitreInfo4Offenses
