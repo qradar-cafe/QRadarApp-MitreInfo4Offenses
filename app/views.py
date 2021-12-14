@@ -4,13 +4,10 @@
 # US Government Users Restricted Rights - Use, duplication or
 # disclosure restricted by GSA ADP Schedule Contract with IBM Corp.
 
-from flask import Blueprint, render_template, current_app, send_from_directory, request
+from flask import Blueprint, render_template, current_app, send_from_directory , Response
 from qpylib import qpylib
-
-from flask import Response
-from qpylib.qpylib import log
-from qpylib.offense_qpylib import get_offense_json_html
 import json
+from qpylib.offense_qpylib import get_offense_json_html
 from qpylib.ariel import ArielSearch, ArielError
 
 # pylint: disable=invalid-name
@@ -31,51 +28,62 @@ def hello(name=None):
 def favicon():
     return send_from_directory(current_app.static_folder, 'favicon-16x16.png')
 
-
+# The restmethod invoked to get the HTML code to include in the Offense panel
 @viewsbp.route('/mitreinfo/<offense_id>', methods=['GET'])
 def get_offense(offense_id):
     try:
         offense_json = get_offense_json_html(offense_id, custom_html_generator)
         return Response(response=offense_json, status=200, mimetype='application/json')
     except Exception as e:
-        log('Error ' + str(e))
+        qpylib.log('Error ' + str(e) , level='ERROR')
         raise
 
 def custom_html_generator(offense_json):
-    log ('Getting Mitre info')
+    '''
+        This function get the mitre information related to an offense 
+        and return the html code to show in the offense.
+    '''
+    qpylib.log ('Getting Mitre info', level='INFO')
+    # Create the list of rule ids involved in the offense
     ruleidlist = ''
     for rule in offense_json["rules"]:
         if ruleidlist == '':
             ruleidlist = str(rule["id"])
         else:
             ruleidlist = ruleidlist + ',' + str(rule["id"])
+    # Build the AQL to get the Mitre info
     query_string = 'SELECT TACTICS::TACTICS(RULENAME(ENUMERATION('+ruleidlist+'))) AS \'Tacticas\' FROM events LIMIT 1'
     ariel = ArielSearch()
+    # Run am Ariel synch search 
     timeout = 15
     sleep_interval = 20
     try:
         response = ariel.search_sync(query_string, timeout, sleep_interval)
-        log('SearchID: ' + str(response[0]))
+        qpylib.log('SearchID: ' + str(response[0]), level='DEBUG')
     except ArielError as error:
-        log( str(error) )
-    
+        qpylib.log( str(error), level='ERROR' )
+    # Get search Results    
     try:
         response = ariel.results(response[0])
-        log('SearchResults: ' + str(response))
+        qpylib.log('SearchResults: ' + str(response), level='DEBUG')
     except ArielError as error:
-        log( str(error) )
+        qpylib.log( str(error), level='ERROR' )
     except ValueError as error:
-        log( str(error) )
+        qpylib.log( str(error), level='ERROR' )
 
+    # Render the result into HTML format
     return render_template('mitreinfo.html', rules=parsingRulesTactics(response))
     
 
 def parsingRulesTactics(rules):
-    log('Parsing Results')
+    '''
+        This function formats the mitre information into an array easier to process by Jinja template
+    '''
+    qpylib.log('Parsing Results', level='INFO')
     result = []
     rules = json.loads(rules["events"][0]["Tacticas"])
     for rule in rules:
-        log(rule)
+        qpylib.log(rule, level='DEBUG')
         newrule = {}
         newrule["name"] = rule
         newrule["tactics"] = []
@@ -90,5 +98,5 @@ def parsingRulesTactics(rules):
                 newtactic["techniques"].append(newtechnique)
             newrule["tactics"].append(newtactic)
         result.append(newrule)
-    log (result)
+    qpylib.log (result , level='DEBUG')
     return result
